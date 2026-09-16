@@ -1,11 +1,23 @@
 import datetime
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from sqlmodel import select, func
 from db.db import SessionDep, create_db_and_tables
 from db.model import EventCreate, Event, EventType, Severity, PaginatedEvents, Summary
 from enum import Enum
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+# Assert 400 error for validation errors instead of 422 (FAST API default)
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 app = FastAPI()
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.on_event("startup")
 def on_startup():
@@ -13,7 +25,8 @@ def on_startup():
 
 
 @app.post("/events", status_code=201)
-def create_event(event_in: EventCreate, session: SessionDep):
+@limiter.limit("100/minute")
+def create_event(request: Request, event_in: EventCreate, session: SessionDep):
     event = Event.model_validate(event_in)   # EventCreate -> Event
     session.add(event)
     session.commit()
@@ -109,3 +122,8 @@ def summary(
         most_active_device=most_active_device,
         high_severity_rate=high_severity_rate,
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=400, content={"detail": exc.errors()})
