@@ -102,11 +102,13 @@ Endpoint: http://127.0.0.1:8000/events/summary?from=2024&to=2026
 
 ## :hourglass: With More Time
 
+- **Dockerize** setup docker compose for single command execution.
 - **Keyset pagination** for the list endpoint. Offset pagination is correct here but scans-and-discards skipped rows and can shift items across pages under concurrent inserts; a `WHERE timestamp < :cursor` keyset approach (supported by the existing timestamp index) scales better over large history.
 - **Postgres** as the migration path once the service needs to scale beyond a single process/host — both SQLite and the in-memory rate-limit store are single-process by design. **Redis** would back the rate limiter under multiple workers.
 - **Per-device rate limiting and auth** edge devices should authenticate (API keys/mTLS), which would also give a natural per-device rate-limit key.
 - **Structured logging and a `/health` endpoint** for observability in a real deployment.
 - **A composite `(device_id, timestamp)` index** if device-scoped time queries turn out to dominate in practice.
+
 
 ## :memo: License
 
