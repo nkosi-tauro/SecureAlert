@@ -1,0 +1,6 @@
+[project]
+name = "securealert"
+version = "1.0.0"
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+]
