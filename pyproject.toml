@@ -3,5 +3,7 @@ name = "securealert"
 version = "1.0.0"
 dependencies = [
     "fastapi[standard]>=0.141.1",
+    "pytest>=9.1.1",
+    "slowapi>=0.1.10",
     "sqlmodel>=0.0.42",
 ]
