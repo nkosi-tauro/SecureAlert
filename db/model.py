@@ -47,6 +47,7 @@ class PaginatedEvents(SQLModel):
     events: list[EventGet]
 
 class Summary(SQLModel):
+    '''Summary response model for returning event summaries to the client.'''
     total_events: int
     by_severity: dict[str, int]
     by_event_type: dict[str, int]
